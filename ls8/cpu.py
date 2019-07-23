@@ -20,9 +20,10 @@ class CPU:
     def load(self, file_name):
         """Load a program into memory."""
 
-        file_extension = file_name.split('.', 1)[1]
+        file_extension = file_name.split('.')[-1]
         if file_extension != 'ls8':
             print(f".{file_extension} is unsupported.")
+            sys.exit(2)
         
         try:
             address = 0
@@ -77,9 +78,10 @@ class CPU:
         running = True
 
         #opcodes
-        LDI = 0b10000010
-        PRN = 0b01000111 
-        HLT = 0b00000001
+        LDI     = 0b10000010
+        PRN     = 0b01000111 
+        MULT    = 0b10100010
+        HLT     = 0b00000001
 
         while running:
             comm = self.ram[self.pc]
@@ -92,7 +94,13 @@ class CPU:
                 index = self.ram[self.pc + 1]
                 print(self.reg[index])
                 self.pc = self.pc + 2
+            elif comm == MULT:
+                a = self.ram[self.pc + 1]
+                b = self.ram[self.pc + 2]
+                print(a*b)
+                self.pc = self.pc + 2
             elif comm == HLT:
                 running = False
             else:
                 print("unknown command")
+                sys.exit(2)
