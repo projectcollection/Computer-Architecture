@@ -17,26 +17,30 @@ class CPU:
     def ram_write(self, index, value):
         self.ram[index] = value
 
-    def load(self):
+    def load(self, file_name):
         """Load a program into memory."""
 
-        address = 0
+        file_extension = file_name.split('.', 1)[1]
+        if file_extension != 'ls8':
+            print(f".{file_extension} is unsupported.")
+        
+        try:
+            address = 0
+            with open(file_name, 'r') as f:
+                all_lines = f.readlines()
 
-        # For now, we've just hardcoded a program:
+                for instruction in all_lines:
+                    op_code = instruction.split('#', 1)[0].strip()
+                    if len(op_code) == 0:
+                        continue
+                    self.ram[address] = int(op_code, 2)
+                    address += 1
 
-        program = [
-            # From print8.ls8
-            0b10000010, # LDI R0,8
-            0b00000000,
-            0b00001000,
-            0b01000111, # PRN R0
-            0b00000000,
-            0b00000001, # HLT
-        ]
+        except FileNotFoundError:
+            print(f'{file_name} does not exist.')
+            sys.exit(2)
 
-        for instruction in program:
-            self.ram[address] = instruction
-            address += 1
+        
 
 
     def alu(self, op, reg_a, reg_b):
