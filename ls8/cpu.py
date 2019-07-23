@@ -103,8 +103,6 @@ class CPU:
             elif comm == MULT:
                 index_a = self.ram[self.pc + 1]
                 index_b = self.ram[self.pc + 2]
-                a = self.reg[index_a]
-                b = self.reg[index_b]
                 print(self.alu(alu_op[MULT], index_a, index_b))
                 self.pc = self.pc + inc
             elif comm == HLT:
