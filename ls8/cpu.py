@@ -85,20 +85,22 @@ class CPU:
 
         while running:
             comm = self.ram[self.pc]
-
+            inc = ((comm & 11000000) >> 6) + 1
             if comm == LDI:
                 index = self.ram[self.pc + 1]
                 self.reg[index] = self.ram[self.pc + 2]
-                self.pc = self.pc + 3
+                self.pc = self.pc + inc
             elif comm == PRN:
                 index = self.ram[self.pc + 1]
                 print(self.reg[index])
-                self.pc = self.pc + 2
+                self.pc = self.pc + inc
             elif comm == MULT:
-                a = self.ram[self.pc + 1]
-                b = self.ram[self.pc + 2]
+                index_a = self.ram[self.pc + 1]
+                index_b = self.ram[self.pc + 2]
+                a = self.reg[index_a]
+                b = self.reg[index_b]
                 print(a*b)
-                self.pc = self.pc + 2
+                self.pc = self.pc + inc
             elif comm == HLT:
                 running = False
             else:
