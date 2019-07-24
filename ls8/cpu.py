@@ -2,6 +2,16 @@
 
 import sys
 
+#opcodes
+LDI     = 0b10000010
+PRN     = 0b01000111 
+MULT    = 0b10100010
+HLT     = 0b00000001
+
+alu_op = {
+    MULT: "MULT"
+}
+
 class CPU:
     """Main CPU class."""
 
@@ -10,6 +20,26 @@ class CPU:
         self.ram = [0] *  256       
         self.reg = [0] * 8
         self.pc = 0
+        self.branchtable = {}
+        self.branchtable[LDI] = self._LDI
+        self.branchtable[PRN] = self._PRN
+        self.branchtable[MULT] = self._MULT
+
+    def _LDI(self, inc):
+        index = self.ram[self.pc + 1]
+        self.reg[index] = self.ram[self.pc + 2]
+        self.pc = self.pc + inc
+
+    def _PRN(self, inc):
+        index = self.ram[self.pc + 1]
+        print(self.reg[index])
+        self.pc = self.pc + inc
+
+    def _MULT(self, inc):
+        index_a = self.ram[self.pc + 1]
+        index_b = self.ram[self.pc + 2]
+        print(self.alu(alu_op[MULT], index_a, index_b))
+        self.pc = self.pc + inc
 
     def ram_read(self, index):
         return self.ram[index]
@@ -40,9 +70,6 @@ class CPU:
         except FileNotFoundError:
             print(f'{file_name} does not exist.')
             sys.exit(2)
-
-        
-
 
     def alu(self, op, reg_a, reg_b):
         """ALU operations."""
@@ -79,32 +106,12 @@ class CPU:
         """Run the CPU."""
         running = True
 
-        #opcodes
-        LDI     = 0b10000010
-        PRN     = 0b01000111 
-        MULT    = 0b10100010
-        HLT     = 0b00000001
-
-        alu_op = {
-            MULT: "MULT"
-        }
-
         while running:
             comm = self.ram[self.pc]
             inc = ((comm & 11000000) >> 6) + 1
-            if comm == LDI:
-                index = self.ram[self.pc + 1]
-                self.reg[index] = self.ram[self.pc + 2]
-                self.pc = self.pc + inc
-            elif comm == PRN:
-                index = self.ram[self.pc + 1]
-                print(self.reg[index])
-                self.pc = self.pc + inc
-            elif comm == MULT:
-                index_a = self.ram[self.pc + 1]
-                index_b = self.ram[self.pc + 2]
-                print(self.alu(alu_op[MULT], index_a, index_b))
-                self.pc = self.pc + inc
+            
+            if comm in self.branchtable:
+                self.branchtable[comm](inc)
             elif comm == HLT:
                 running = False
             else:
