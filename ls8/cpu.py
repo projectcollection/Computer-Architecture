@@ -11,6 +11,8 @@ HLT     = 0b00000001
 PUSH    = 0b01000101
 POP     = 0b01000110
 
+SP = 7
+
 alu_op = {
     MULT: "MULT"
 }
@@ -20,11 +22,11 @@ class CPU:
 
     def __init__(self):
         """Construct a new CPU."""
-        self.capacity = 256
-        self.ram = [0] *  self.capacity
+        capacity = 256
+        self.ram = [0] * capacity
         self.reg = [0] * 8
         self.pc = 0
-        self.sp = self.capacity - 1
+        self.reg[SP] = capacity - 1
         self.branchtable = {}
         self.branchtable[LDI] = self._LDI
         self.branchtable[PRN] = self._PRN
@@ -49,20 +51,20 @@ class CPU:
         self.pc = self.pc + inc
        
     def _PUSH(self, inc):
-        self.sp -= 1
-        reg_index = self.ram[self.pc + 1]
-        if self.sp != self.pc: #check if this is the right way to detect a stack overflow
-            self.ram[self.sp] = self.reg[reg_index]
+        self.reg[SP] -= 1
+        reg_index = self.ram_read(self.pc + 1)
+        if self.reg[SP] != self.pc: #check if this is the right way to detect a stack overflow
+            self.ram_write(self.reg[SP], self.reg[reg_index])
             self.pc = self.pc + inc
         else:
             print('stack overflow')
             sys.exit(2)
 
     def _POP(self, inc):
-        reg_index = self.ram[self.pc + 1]
-        if self.sp + 1 < self.capacity:
-            self.reg[reg_index] = self.ram[self.sp]
-            self.sp += 1
+        reg_index = self.ram_read(self.pc + 1)
+        if self.reg[SP] + 1 < len(self.ram):
+            self.reg[reg_index] = self.ram_read(self.reg[SP])
+            self.reg[SP] += 1
             self.pc = self.pc + inc
         else:
             print('bottom of stack')
